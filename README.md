@@ -1,42 +1,65 @@
-# AI Task Manager (Уровень 1 + Уровень 2, смешано)
+# AI Task Manager
 
-Практическое задание: система управления задачами с автоматическим анализом текста.
+Практическое задание по производственной практике: система управления задачами с автоматическим анализом текста.
 
-## 🎯 Что умеет приложение
+## 📖 О проекте
 
-**Уровень 1:**
+Приложение позволяет пользователям регистрироваться, входить в систему и управлять своими задачами. При создании задачи её текст автоматически анализируется Python-сервисом, который определяет **приоритет** и **категорию**.
+
+### Что реализовано
+
+**Уровень 1 (Junior):**
 - Создание, просмотр, изменение статуса и удаление задач.
-- Хранение задач в PostgreSQL.
+- REST API на Node.js + Express.
+- Хранение данных в PostgreSQL.
+- React-интерфейс с формой и таблицей задач.
+- Python-скрипт для экспорта задач в CSV.
 
-**Уровень 2:**
+**Уровень 2 (Middle):**
 - Регистрация и вход пользователей (JWT-авторизация).
-- Пароли хранятся в хешированном виде (bcrypt).
+- Пароли хранятся в виде хеша (bcrypt).
 - Каждый пользователь видит **только свои** задачи.
-- Автоматический анализ текста задачи: Python-сервис определяет **приоритет** и **категорию**.
-- Экспорт всех задач в CSV (Python-скрипт).
+- Отдельный Python-сервис (FastAPI) для анализа текста задачи.
+- Интеграция Node.js ↔ Python: backend отправляет текст задачи в Python и получает приоритет и категорию.
+- Защищённые маршруты на фронтенде (React Router).
+- Отображение приоритета и категории в интерфейсе.
 
 ## 🛠 Стек технологий
 
 | Компонент | Технология |
 |-----------|------------|
-| Frontend | React + JavaScript + React Router |
-| Backend | Node.js + Express + JWT |
+| Frontend | React, React Router, Axios |
+| Backend | Node.js, Express, JWT, bcrypt |
 | База данных | PostgreSQL |
-| Python-сервис | FastAPI + Uvicorn |
-| Контроль версий | Git |
+| Python-сервис | FastAPI, Uvicorn |
+| Контроль версий | Git, GitHub |
 
 ## 📋 Требования
 
-- Node.js (v18+)
-- PostgreSQL (v15+)
-- Python (v3.10+)
+Перед запуском убедитесь, что установлены:
+
+- **Node.js** v18 или выше — [скачать](https://nodejs.org/)
+- **PostgreSQL** v15 или выше — [скачать](https://www.postgresql.org/download/)
+- **Python** v3.10 или выше — [скачать](https://www.python.org/downloads/)
 
 ## 🚀 Установка и запуск
 
-### 1. База данных
+### Шаг 1. Клонирование репозитория
 
-1. Откройте pgAdmin и создайте базу данных `task_manager`.
-2. Выполните SQL-скрипт:
+```bash
+git clone https://github.com/AnnGolik/ai-task-manager.git
+cd ai-task-manager
+```
+
+### Шаг 2. Настройка базы данных
+
+1. Откройте pgAdmin (или psql) и создайте базу данных:
+
+```sql
+CREATE DATABASE task_manager;
+```
+
+2. Подключитесь к базе `task_manager` и выполните SQL-скрипт:
 
 ```sql
 CREATE TABLE users (
@@ -58,69 +81,185 @@ CREATE TABLE tasks (
 );
 ```
 
-### 2. Backend (Node.js)
+### Шаг 3. Запуск Backend (Node.js)
 
 ```bash
 cd backend
 npm install
-# Создайте файл .env (см. .env.example) и укажите свой пароль от PostgreSQL
+```
+
+Создайте файл `.env` в папке `backend` (по образцу `.env.example`):
+
+```env
+PORT=5000
+DB_USER=postgres
+DB_PASSWORD=ваш_пароль
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=task_manager
+JWT_SECRET=ваш_секретный_ключ
+```
+
+Запустите сервер:
+
+```bash
 npm run dev
 ```
-Сервер запустится на `http://localhost:5000`.
 
-### 3. Python-сервис (анализ текста)
+Backend будет доступен по адресу: `http://localhost:5000`
+
+### Шаг 4. Запуск Python-сервиса (анализатор текста)
+
+Откройте **новый терминал**:
 
 ```bash
 cd python
-pip install fastapi uvicorn
+pip install -r requirements.txt
 python -m uvicorn analyzer:app --reload --port 8000
 ```
-Сервис запустится на `http://localhost:8000`. Документация: `http://localhost:8000/docs`.
 
-### 4. Frontend (React)
+Python-сервис будет доступен по адресу: `http://localhost:8000`
+Документация (Swagger UI): `http://localhost:8000/docs`
+
+### Шаг 5. Запуск Frontend (React)
+
+Откройте **новый терминал**:
 
 ```bash
 cd frontend
 npm install
 npm start
 ```
-Приложение откроется на `http://localhost:3000`.
 
-### 5. Python-скрипт экспорта в CSV (опционально)
+Приложение откроется в браузере: `http://localhost:3000`
+
+### Шаг 6 (опционально). Экспорт задач в CSV
 
 ```bash
 cd python
-pip install psycopg2-binary
 python export_tasks.py
 ```
-Создаст файл `tasks_export.csv` со всеми задачами.
+
+Будет создан файл `tasks_export.csv` со всеми задачами.
 
 ## 📡 API
 
 ### Авторизация
-- `POST /auth/register` — регистрация нового пользователя.
-- `POST /auth/login` — вход существующего пользователя.
+
+| Метод | URL | Описание |
+|-------|-----|----------|
+| POST | `/auth/register` | Регистрация нового пользователя |
+| POST | `/auth/login` | Вход существующего пользователя |
+
+**Пример тела запроса:**
+```json
+{
+  "email": "user@example.com",
+  "password": "123456"
+}
+```
+
+**Ответ:** `{ "token": "...", "user": { "id": 1, "email": "..." } }`
 
 ### Задачи (требуется JWT-токен)
-- `GET /tasks` — получить только свои задачи.
-- `POST /tasks` — создать задачу (текст отправляется в Python для анализа).
-- `PUT /tasks/:id` — изменить статус задачи.
-- `DELETE /tasks/:id` — удалить задачу.
+
+Заголовок запроса: `Authorization: Bearer <ваш_токен>`
+
+| Метод | URL | Описание |
+|-------|-----|----------|
+| GET | `/tasks` | Получить только свои задачи |
+| POST | `/tasks` | Создать задачу |
+| PUT | `/tasks/:id` | Изменить статус задачи |
+| DELETE | `/tasks/:id` | Удалить задачу |
+
+**Пример создания задачи:**
+```json
+{
+  "title": "Подготовить презентацию для клиента",
+  "description": "До пятницы"
+}
+```
 
 ### Python-сервис
-- `POST /analyze` — анализ текста (принимает `{text}` и возвращает `{priority, category}`).
 
-## 🏷 Статусы, приоритеты, категории
+| Метод | URL | Описание |
+|-------|-----|----------|
+| GET | `/` | Проверка работоспособности |
+| POST | `/analyze` | Анализ текста задачи |
 
-**Статусы:** `new`, `in_progress`, `done`
+**Пример запроса:**
+```json
+{
+  "text": "Подготовить презентацию для клиента до пятницы"
+}
+```
 
-**Приоритеты:** `high`, `medium`, `low`
+**Ответ:**
+```json
+{
+  "priority": "high",
+  "category": "business"
+}
+```
 
-**Категории:** `business`, `study`, `personal`, `health`, `finance`, `general`
+## 🏷 Справочные значения
+
+### Статусы задач
+- `new` — Новая
+- `in_progress` — В работе
+- `done` — Выполнена
+
+### Приоритеты
+- `high` — Высокий
+- `medium` — Средний
+- `low` — Низкий
+
+### Категории
+- `business` — Работа
+- `study` — Учёба
+- `personal` — Личное
+- `health` — Здоровье
+- `finance` — Финансы
+- `general` — Общее
 
 ## 🔐 Безопасность
 
-- Пароли хешируются через `bcrypt` перед сохранением в БД.
-- JWT-токены подписываются секретным ключом из `.env`.
-- Файл `.env` не попадает в Git (добавлен в `.gitignore`).
-- Пользователь может видеть, изменять и удалять только свои задачи.
+- Пароли хешируются через **bcrypt** перед сохранением в БД.
+- **JWT-токены** подписываются секретным ключом (`JWT_SECRET`).
+- Файл `.env` **не попадает в Git** (добавлен в `.gitignore`).
+- Пользователь может видеть, изменять и удалять **только свои** задачи.
+- При запросе чужих задач возвращается `404 Not Found`.
+
+## 📂 Структура проекта
+
+```
+ai-task-manager/
+├── backend/              # Node.js + Express (backend)
+│   ├── middleware/       # Проверка JWT-токена
+│   ├── routes/           # Роуты: auth.js, tasks.js
+│   ├── db.js             # Подключение к PostgreSQL
+│   ├── index.js          # Точка входа
+│   └── .env.example      # Пример переменных окружения
+│
+├── frontend/             # React-приложение
+│   └── src/
+│       ├── api/          # Axios-обёртка с авто-токеном
+│       ├── context/      # AuthContext (хранилище токена)
+│       ├── pages/        # Register, Login, Tasks
+│       ├── App.js        # Роутинг
+│       └── index.js
+│
+├── python/               # Python-сервис
+│   ├── analyzer.py       # FastAPI-сервис анализа текста
+│   ├── export_tasks.py   # Скрипт экспорта в CSV
+│   └── requirements.txt
+│
+├── .gitignore
+└── README.md
+```
+
+## 👤 Автор
+
+**Анна** — студентка, практика по разработке веб-приложений.
+
+GitHub: [@AnnGolik](https://github.com/AnnGolik)
