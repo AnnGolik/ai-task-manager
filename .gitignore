@@ -14,3 +14,12 @@ tasks_export.csv
 # Системные файлы
 .DS_Store
 Thumbs.db
+
+# Python
+*.pyc
+__pycache__/
+.venv/
+venv/
+
+# Логи и отчёты
+*.log
