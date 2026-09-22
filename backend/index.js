@@ -7,6 +7,8 @@ app.use(cors());
 app.use(express.json());
 
 const tasksRouter = require('./routes/tasks');
+const authRouter = require('./routes/auth');
+app.use('/auth', authRouter);
 app.use('/tasks', tasksRouter);
 
 const PORT = process.env.PORT || 5000;
