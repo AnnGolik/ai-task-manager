@@ -29,7 +29,15 @@ router.get('/', async (req, res) => {
 // ============================================
 router.post('/', async (req, res) => {
   const { title, description } = req.body;
-  if (!title) return res.status(400).json({ error: 'Title обязателен' });
+
+  // Проверяем, что title есть и не состоит из одних пробелов
+  if (!title || !title.trim()) {
+    return res.status(400).json({ error: 'Title обязателен' });
+  }
+
+  // Обрезаем пробелы в начале и конце
+  const cleanTitle = title.trim();
+  const cleanDescription = (description || '').trim();
 
   // Значения по умолчанию, если Python-сервис недоступен
   let priority = 'medium';
@@ -37,14 +45,16 @@ router.post('/', async (req, res) => {
 
   // Пытаемся получить анализ от Python-сервиса
   try {
-    const analyzeResponse = await axios.post('http://localhost:8000/analyze', {
-      text: `${title} ${description || ''}`.trim()
-    });
+    const analyzeResponse = await axios.post(
+      'http://localhost:8000/analyze',
+      { text: `${cleanTitle} ${cleanDescription}`.trim() },
+      { timeout: 3000 } // 3 секунды — если дольше, падаем в catch
+    );
     priority = analyzeResponse.data.priority;
     category = analyzeResponse.data.category;
     console.log(`Анализ: priority=${priority}, category=${category}`);
   } catch (err) {
-    // Если Python-сервис упал — просто используем значения по умолчанию
+    // Если Python-сервис упал или не ответил за 3 секунды — используем значения по умолчанию
     console.warn('Python-сервис недоступен, использую значения по умолчанию');
   }
 
@@ -52,7 +62,7 @@ router.post('/', async (req, res) => {
     const result = await pool.query(
       `INSERT INTO tasks (user_id, title, description, priority, category)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [req.user.userId, title, description || '', priority, category]
+      [req.user.userId, cleanTitle, cleanDescription, priority, category]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
