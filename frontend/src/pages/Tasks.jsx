@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Logo from '../components/Logo';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
@@ -91,7 +92,10 @@ function Tasks() {
   return (
     <div className="container">
       <div className="header">
-        <h1>Task Manager</h1>
+        <div className="brand">
+          <Logo size={32} />
+          <h1>AI Task Manager</h1>
+        </div>
         <div className="user-info">
           <div className="user-avatar">
             {user?.email?.[0] || '?'}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import Logo from '../components/Logo';
 import api from '../api/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -34,6 +35,9 @@ function Register() {
   return (
     <div className="auth-wrapper">
       <div className="auth-container">
+        <div className="auth-logo">
+          <Logo size={48} />
+        </div>
         <h1>Регистрация</h1>
         <p className="auth-subtitle">Создайте аккаунт для управления задачами</p>
 
