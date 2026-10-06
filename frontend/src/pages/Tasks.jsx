@@ -8,12 +8,14 @@ function Tasks() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   const fetchTasks = async () => {
     try {
+      setLoading(true);
       const res = await api.get('/tasks');
       setTasks(res.data);
     } catch (err) {
@@ -22,6 +24,8 @@ function Tasks() {
         logout();
         navigate('/login');
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,66 +122,70 @@ function Tasks() {
 
       {error && <p className="error">{error}</p>}
 
-      <table className="task-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Название</th>
-            <th>Описание</th>
-            <th>Статус</th>
-            <th>Приоритет</th>
-            <th>Категория</th>
-            <th>Дата</th>
-            <th>Действия</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tasks.length === 0 ? (
+      {loading ? (
+        <p className="empty">Загрузка задач...</p>
+      ) : (
+        <table className="task-table">
+          <thead>
             <tr>
-              <td colSpan="8" className="empty">
-                Задач пока нет. Создайте первую.
-              </td>
+              <th>ID</th>
+              <th>Название</th>
+              <th>Описание</th>
+              <th>Статус</th>
+              <th>Приоритет</th>
+              <th>Категория</th>
+              <th>Дата</th>
+              <th>Действия</th>
             </tr>
-          ) : (
-            tasks.map((task) => (
-              <tr key={task.id}>
-                <td>#{task.id}</td>
-                <td><strong style={{ fontWeight: 500 }}>{task.title}</strong></td>
-                <td>{task.description || <span style={{ color: '#9ca3af' }}>—</span>}</td>
-                <td>
-                  <select
-                    value={task.status}
-                    onChange={(e) => updateStatus(task.id, e.target.value)}
-                  >
-                    <option value="new">Новая</option>
-                    <option value="in_progress">В работе</option>
-                    <option value="done">Выполнена</option>
-                  </select>
-                </td>
-                <td>
-                  <span className={`badge priority-${task.priority}`}>
-                    {priorityLabel[task.priority] || task.priority}
-                  </span>
-                </td>
-                <td>
-                  <span className="category-badge">
-                    {categoryLabel[task.category] || task.category}
-                  </span>
-                </td>
-                <td>{new Date(task.created_at).toLocaleString('ru-RU')}</td>
-                <td>
-                  <button
-                    className="delete-btn"
-                    onClick={() => deleteTask(task.id)}
-                  >
-                    Удалить
-                  </button>
+          </thead>
+          <tbody>
+            {tasks.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="empty">
+                  Задач пока нет. Создайте первую.
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              tasks.map((task) => (
+                <tr key={task.id}>
+                  <td>#{task.id}</td>
+                  <td><strong style={{ fontWeight: 500 }}>{task.title}</strong></td>
+                  <td>{task.description || <span style={{ color: '#9ca3af' }}>—</span>}</td>
+                  <td>
+                    <select
+                      value={task.status}
+                      onChange={(e) => updateStatus(task.id, e.target.value)}
+                    >
+                      <option value="new">Новая</option>
+                      <option value="in_progress">В работе</option>
+                      <option value="done">Выполнена</option>
+                    </select>
+                  </td>
+                  <td>
+                    <span className={`badge priority-${task.priority}`}>
+                      {priorityLabel[task.priority] || task.priority}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="category-badge">
+                      {categoryLabel[task.category] || task.category}
+                    </span>
+                  </td>
+                  <td>{new Date(task.created_at).toLocaleString('ru-RU')}</td>
+                  <td>
+                    <button
+                      className="delete-btn"
+                      onClick={() => deleteTask(task.id)}
+                    >
+                      Удалить
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
